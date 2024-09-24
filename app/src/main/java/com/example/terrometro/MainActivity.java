@@ -81,26 +81,13 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Double> calcularMediasResistencia() {
         ArrayList<Double> mediasResistencias = new ArrayList<>();
 
-        int totalIntervalos = 30; // Supondo que você queira calcular médias de 30 intervalos de tempo
-        int intervaloPorMinuto = resistenciasCalculadas.size() / totalIntervalos;
-
-        for (int i = 0; i < totalIntervalos; i++) {
-            double soma = 0;
-            int contador = 0;
-
-            for (int j = i * intervaloPorMinuto; j < (i + 1) * intervaloPorMinuto && j < resistenciasCalculadas.size(); j++) {
-                soma += resistenciasCalculadas.get(j);
-                contador++;
-            }
-
-            if (contador > 0) {
-                mediasResistencias.add(soma / contador); // Calcula a média para o intervalo
-            }
+        // Simulação de valores de resistência (substitua pelos valores reais)
+        for (int i = 0; i < 30; i++) {
+            mediasResistencias.add(Math.random() * 100); // Exemplo de valor aleatório
         }
 
         return mediasResistencias;
     }
-
     private double gerarValorComVariacao(double valorAtual, double percentualVariacao) {
         double variacaoMaxima = valorAtual * percentualVariacao;
         double variacao = (Math.random() * 2 * variacaoMaxima) - variacaoMaxima; // Gera um valor entre -5% e +5%
