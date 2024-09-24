@@ -1,8 +1,11 @@
 package com.example.terrometro;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -25,31 +28,66 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
-
     private static final String TAG = "MainActivity";
     private Handler handler = new Handler();
     private final int INTERVALO_TEMPO = 5000; // 5 segundos
-    private TextView textViewResistencia, correnteText, tensaoText; // TextView para mostrar a resistência
-    private LineChart lineChart; // Gráfico de linha para exibir a resistência
-    private ArrayList<Entry> valoresResistencia = new ArrayList<>(); // Lista de valores para o gráfico
-    private int tempoDecorrido = 0; // Para o eixo X (tempo)
+    private Button botao;
+    private TextView textViewResistencia, correnteText, tensaoText;
+    private LineChart lineChart;
+    private ArrayList<Entry> valoresResistencia = new ArrayList<>();
+    private int tempoDecorrido = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
         lineChart = findViewById(R.id.chart);
+        botao = findViewById(R.id.botao);
+
+        // Configura o evento de clique no botão
+        botao.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Calcula as médias de resistência
+                ArrayList<Double> mediasResistencias = calcularMediasResistencia();
+
+                // Abre a Activity da tabela de resistências
+                abrirTabelaResistencia(mediasResistencias);
+            }
+        });
 
         // Configura o gráfico de linha
         configurarGrafico();
+
         // Inicializa o TextView do layout
         textViewResistencia = findViewById(R.id.textViewResistencia);
         correnteText = findViewById(R.id.correnteText);
         tensaoText = findViewById(R.id.tensãoText);
+
         // Inicia o timer para ler os dados e calcular a resistência
         iniciarLeituraPeriodica();
+    }
 
+    // Função para abrir a Activity da tabela de resistências
+    private void abrirTabelaResistencia(ArrayList<Double> mediasResistencias) {
+        Intent intent = new Intent(MainActivity.this, tabela.class);
+        intent.putExtra("mediasResistencias", mediasResistencias);
+        startActivity(intent);
+    }
+
+    // Função que simula o cálculo de médias de resistência
+    private ArrayList<Double> calcularMediasResistencia() {
+        ArrayList<Double> mediasResistencias = new ArrayList<>();
+
+        // Simulação de valores de resistência (substitua pelos valores reais)
+        for (int i = 0; i < 30; i++) {
+            mediasResistencias.add(Math.random() * 100); // Exemplo de valor aleatório
+        }
+
+        return mediasResistencias;
     }
     private double gerarValorComVariacao(double valorAtual, double percentualVariacao) {
         double variacaoMaxima = valorAtual * percentualVariacao;
