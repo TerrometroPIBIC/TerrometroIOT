@@ -14,6 +14,7 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
@@ -50,7 +51,11 @@ public class MainActivity extends AppCompatActivity {
         iniciarLeituraPeriodica();
 
     }
-
+    private double gerarValorComVariacao(double valorAtual, double percentualVariacao) {
+        double variacaoMaxima = valorAtual * percentualVariacao;
+        double variacao = (Math.random() * 2 * variacaoMaxima) - variacaoMaxima; // Gera um valor entre -5% e +5%
+        return valorAtual + variacao;
+    }
     // Função que inicia a leitura periódica de corrente e tensão do Firebase
     private void iniciarLeituraPeriodica() {
         handler.postDelayed(new Runnable() {
@@ -75,11 +80,19 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Double tensao = dataSnapshot.child("Tensao").getValue(Double.class);
                 Double corrente = dataSnapshot.child("Corrente").getValue(Double.class);
-
+                Double tensaoAtual = dataSnapshot.child("Tensao").getValue(Double.class);
+                Double correnteAtual = dataSnapshot.child("Corrente").getValue(Double.class);
                 if (tensao != null && corrente != null) {
                     try {
                         double resistencia = calcularResistencia(tensao, corrente);
                         Log.d(TAG, "A resistência calculada é: " + resistencia + " ohms.");
+                        // Gerar valores de tensão e corrente com variação de 5%
+                        double novaTensao = gerarValorComVariacao(tensaoAtual, 0.005);
+                        double novaCorrente = gerarValorComVariacao(correnteAtual, 0.005);
+
+                        // Atualizar o Firebase com os novos valores
+                        medidasRef.child("Tensao").setValue(novaTensao);
+                        medidasRef.child("Corrente").setValue(novaCorrente);
 
                         // Atualiza o TextView com o valor da resistência
                         atualizarTextViewResistencia(resistencia,corrente, tensao);
@@ -115,9 +128,13 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textViewResistencia.setText("Resistência: " + resistencia + " ohms");
-                tensaoText.setText("Tensão:"+tensao);
-                correnteText.setText("Corrente:"+corrente);
+                double textoresistencia;
+                textoresistencia = resistencia / 1000000000;
+                textViewResistencia.setText(String.format("Resistência: %.3f MΩ", textoresistencia));
+                tensaoText.setText(String.format("Tensão %.3f Vrms", tensao));
+                double textocorrente;
+                textocorrente = corrente * 1000000;
+                correnteText.setText(String.format("Corrente: %.5f mA", textocorrente));
             }
         });
     }
@@ -135,11 +152,19 @@ public class MainActivity extends AppCompatActivity {
         YAxis leftAxis = lineChart.getAxisLeft();
         leftAxis.setAxisMinimum(0f); // Valor mínimo no eixo Y
 
+        // Formata o eixo Y para mostrar os valores em milhões
+        leftAxis.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return String.format("%.3fM", value / 1000000000); // Divide por 1.000.000 para exibir em milhões
+            }
+        });
+
         YAxis rightAxis = lineChart.getAxisRight();
         rightAxis.setEnabled(false); // Desativa o eixo Y à direita
+
         lineChart.setVisibleXRangeMaximum(10); // Por exemplo, mostra os últimos 10 segundos
         lineChart.moveViewToX(valoresResistencia.size() - 1); // Move a visualização para o último ponto
-
     }
     private void atualizarGraficoResistencia(double resistencia) {
         // Adiciona o novo valor ao gráfico, usando o tempo como eixo X
