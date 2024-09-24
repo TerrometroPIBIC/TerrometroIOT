@@ -50,7 +50,7 @@ voltar = findViewById(R.id.voltar);
         tvTempo.setPadding(8, 8, 8, 8);
 
         TextView tvMedia = new TextView(this);
-        tvMedia.setText(String.format("%.2f ohms", mediaResistencia));
+        tvMedia.setText(String.format("%.3f MΩ", mediaResistencia/10));
         tvMedia.setPadding(8, 8, 8, 8);
 
         row.addView(tvTempo);

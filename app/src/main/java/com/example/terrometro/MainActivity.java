@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView textViewResistencia, correnteText, tensaoText;
     private LineChart lineChart;
     private ArrayList<Entry> valoresResistencia = new ArrayList<>();
+    private ArrayList<Double> resistenciasCalculadas = new ArrayList<>();
     private int tempoDecorrido = 0;
 
     @Override
@@ -70,25 +71,36 @@ public class MainActivity extends AppCompatActivity {
         // Inicia o timer para ler os dados e calcular a resistência
         iniciarLeituraPeriodica();
     }
-
-    // Função para abrir a Activity da tabela de resistências
     private void abrirTabelaResistencia(ArrayList<Double> mediasResistencias) {
         Intent intent = new Intent(MainActivity.this, tabela.class);
         intent.putExtra("mediasResistencias", mediasResistencias);
         startActivity(intent);
     }
 
-    // Função que simula o cálculo de médias de resistência
+    // Função para calcular médias de resistência com base nos valores armazenados
     private ArrayList<Double> calcularMediasResistencia() {
         ArrayList<Double> mediasResistencias = new ArrayList<>();
 
-        // Simulação de valores de resistência (substitua pelos valores reais)
-        for (int i = 0; i < 30; i++) {
-            mediasResistencias.add(Math.random() * 100); // Exemplo de valor aleatório
+        int totalIntervalos = 30; // Supondo que você queira calcular médias de 30 intervalos de tempo
+        int intervaloPorMinuto = resistenciasCalculadas.size() / totalIntervalos;
+
+        for (int i = 0; i < totalIntervalos; i++) {
+            double soma = 0;
+            int contador = 0;
+
+            for (int j = i * intervaloPorMinuto; j < (i + 1) * intervaloPorMinuto && j < resistenciasCalculadas.size(); j++) {
+                soma += resistenciasCalculadas.get(j);
+                contador++;
+            }
+
+            if (contador > 0) {
+                mediasResistencias.add(soma / contador); // Calcula a média para o intervalo
+            }
         }
 
         return mediasResistencias;
     }
+
     private double gerarValorComVariacao(double valorAtual, double percentualVariacao) {
         double variacaoMaxima = valorAtual * percentualVariacao;
         double variacao = (Math.random() * 2 * variacaoMaxima) - variacaoMaxima; // Gera um valor entre -5% e +5%
